@@ -35,7 +35,10 @@ def step(action: Action):
         conn.close()
 
 # Is block ko dhayan se dekhein
-if __name__ == "__main__":
+def start():
     import uvicorn
-    # 'app' wahi naam hona chahiye jo FastAPI() ko diya hai
-    uvicorn.run(app, host="127.0.0.1", port=8000, log_level="info")
+    # Port 7860 hi rehne dena kyunki Hugging Face wahi use karta hai
+    uvicorn.run(app, host="0.0.0.0", port=7860)
+
+if __name__ == "__main__":
+    start()
