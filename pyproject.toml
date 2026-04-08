@@ -6,11 +6,21 @@ build-backend = "setuptools.build_meta"
 name = "sql-agent-auditor"
 version = "0.1.0"
 description = "SQL Agent Auditor for OpenEnv Hackathon"
+readme = "README.md"
+requires-python = ">=3.10"
 dependencies = [
     "fastapi",
     "uvicorn",
     "openai",
     "requests",
     "pandas",
-    "python-multipart"
+    "python-multipart",
+    "openenv>=0.2.0",
+    "openenv-core>=0.2.0"
 ]
+
+[project.scripts]
+server = "main:app"
+
+[tool.setuptools]
+py-modules = ["main", "sql", "inference"]
