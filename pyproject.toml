@@ -20,7 +20,7 @@ dependencies = [
 ]
 
 [project.scripts]
-server = "main:start"
+server = "server.app:main"
 
 [tool.setuptools]
 py-modules = ["main", "sql", "inference"]
