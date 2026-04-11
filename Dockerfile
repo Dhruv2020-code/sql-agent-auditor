@@ -17,4 +17,4 @@ COPY --chown=user . .
 # Port expose karein (Hugging Face standard)
 EXPOSE 7860
 
-CMD ["sh", "-c", "python main.py & sleep 10 && python inference.py || echo 'INFERENCE CRASHED'"]
+CMD ["sh", "-c", "python main.py & sleep 25 && python inference.py"]
