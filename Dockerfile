@@ -1,8 +1,20 @@
 FROM python:3.10
-WORKDIR /code
-COPY ./requirements.txt /code/requirements.txt
-RUN pip install --no-cache-dir --upgrade -r /code/requirements.txt
-COPY . .
 
-# Server ko background mein chalao, 5 second ruko, phir inference chalao
-CMD sh -c "python main.py & sleep 5 && python inference.py"
+# Hugging Face permissions fix
+RUN useradd -m -u 1000 user
+USER user
+ENV PATH="/home/user/.local/bin:$PATH"
+
+WORKDIR /home/user/app
+
+# Dependencies install karein
+COPY --chown=user requirements.txt .
+RUN pip install --no-cache-dir --upgrade -r requirements.txt
+
+# Pura code copy karein
+COPY --chown=user . .
+
+# Port expose karein (Hugging Face standard)
+EXPOSE 7860
+
+CMD ["sh", "-c", "python main.py & sleep 10 && python inference.py || echo 'INFERENCE CRASHED'"]
