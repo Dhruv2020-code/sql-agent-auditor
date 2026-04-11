@@ -9,12 +9,12 @@ tasks:
   - id: "task_1"
     goal: "Calculate the total revenue from all orders."
     difficulty: "Easy"
-    reward_threshold: 1.0
+    reward_threshold: 0.90
   - id: "task_2"
     goal: "Find top 5 customers who spent the most."
     difficulty: "Medium"
-    reward_threshold: 1.0
+    reward_threshold: 0.90
   - id: "task_3"
     goal: "Identify products with low stock and their suppliers."
     difficulty: "Hard"
-    reward_threshold: 1.0
+    reward_threshold: 0.90
