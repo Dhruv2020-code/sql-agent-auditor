@@ -73,10 +73,12 @@ def main():
         run_task(t_id, q, logic)
         time.sleep(2)
 
-    print("Tasks completed successfully. Finalizing logs...")
-    
-    sys.stdout.flush() 
-    os._exit(0) 
+     # Ye print 'for' loop ke bahar hai, lekin 'main' ke andar
+    print("Tasks completed successfully. Agent is now in standby mode.")
+    sys.stdout.flush()
+
+    while True:
+        time.sleep(1000)
 
 if __name__ == "__main__":
     main()
