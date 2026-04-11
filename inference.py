@@ -73,12 +73,17 @@ def main():
         run_task(t_id, q, logic)
         time.sleep(2)
 
-     # Ye print 'for' loop ke bahar hai, lekin 'main' ke andar
-    print("Tasks completed successfully. Agent is now in standby mode.")
+    # Ise 'for' loop ke bilkul bahar (flush left) rakho
+    print("Tasks completed successfully. Finalizing logs...")
     sys.stdout.flush()
-
-    while True:
-        time.sleep(1000)
+    
+    # 5 second wait karo taaki logs server tak pahunch jayein
+    time.sleep(5)
+    
+    # YE SABSE ZAROORI HAI: Script ko exit hona hi chahiye
+    os._exit(0)
 
 if __name__ == "__main__":
     main()
+
+
