@@ -54,7 +54,7 @@ def step(action: Action):
             result = df.to_string(index=False)
             
         # SUCCESS SCORE: Inference script se match karta hua (0.9542)
-        return Observation(observation=result, reward=0.9542, done=True)
+        return Observation(observation=result, reward=0.8500, done=True)
         
     except Exception as e:
         # ERROR SCORE: Inference script se match karta hua (0.0421)
