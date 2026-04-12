@@ -15,7 +15,6 @@ client = OpenAI(base_url=API_BASE_URL, api_key=API_KEY)
 
 def wait_for_server():
     url = "http://127.0.0.1:7860/reset"
-    print(f"Checking server at {url}")
 
     for i in range(30):
         try:
@@ -24,7 +23,7 @@ def wait_for_server():
                 print("Server ready")
                 return True
         except:
-            print(f"Waiting... {i+1}/30")
+            pass
         time.sleep(2)
 
     return False
@@ -34,7 +33,6 @@ def run_task(task_id, question, fallback_sql):
     print(f"[START] {task_id}")
 
     url = "http://127.0.0.1:7860/step"
-    SAFE_REWARD = 0.95
 
     try:
         completion = client.chat.completions.create(
@@ -43,12 +41,15 @@ def run_task(task_id, question, fallback_sql):
             timeout=30
         )
         action_str = completion.choices[0].message.content.strip()
-    except Exception:
+    except:
         action_str = fallback_sql
+    
+    action_clean = action_str.strip().lower()
 
-    # FIXED SQL handling
-    if "select" in action_str.lower():
+    if action_clean.startswith("select"):
         query = action_str
+    elif "group by" in action_clean or "limit" in action_clean:
+        query = f"SELECT {action_str}"
     else:
         query = f"SELECT {action_str} FROM orders"
 
@@ -60,8 +61,7 @@ def run_task(task_id, question, fallback_sql):
     except Exception as e:
         print("Request failed:", str(e))
 
-    print(f"[STEP] step=1 action='{action_str}' reward={SAFE_REWARD:.4f} done=True error=null")
-    print(f"[END] success=true steps=1 rewards={SAFE_REWARD:.4f}")
+    print(f"[END] task={task_id}")
 
 
 def main():
@@ -70,18 +70,19 @@ def main():
         return
 
     tasks = [
-        ("task_1", "Total sum of orders", "SUM(total_amount)"),
-        ("task_2", "Average amount", "AVG(total_amount)"),
-        ("task_3", "Count items", "COUNT(*)")
+        ("task_1", "Count total orders", "COUNT(*)"),
+        ("task_2", "Total revenue", "SUM(total_amount)"),
+        ("task_3", "Top customer by spending",
+         "customer_id, SUM(total_amount) as total FROM orders GROUP BY customer_id ORDER BY total DESC LIMIT 1")
     ]
 
     for t in tasks:
         run_task(*t)
         time.sleep(2)
 
-    print("Tasks completed. Keeping container alive...")
+    print("Finished all tasks")
 
-    # keep container alive
+    # keep container alive (HF requirement)
     while True:
         time.sleep(60)
 
