@@ -80,11 +80,15 @@ def main():
         run_task(*t)
         time.sleep(2)
 
-    print("Finished all tasks")
+    # Tasks loop ke baad
+    print("Tasks completed successfully. Finalizing logs...")
+    sys.stdout.flush()
 
-    # keep container alive (HF requirement)
-    while True:
-        time.sleep(60)
+   
+    time.sleep(5) 
+
+    print("Shutting down to finalize evaluation.")
+    os._exit(0)
 
 
 if __name__ == "__main__":
