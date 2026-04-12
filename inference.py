@@ -34,7 +34,7 @@ def run_task(task_id, question, sql_logic):
     url = "http://127.0.0.1:7860/step"
     
     # Safe reward value jo hamesha range (0, 1) mein rahegi
-    SAFE_REWARD = 0.8500 
+    SAFE_REWARD = 0.9500 
 
     try:
         # LLM Call (Proxy check pass karne ke liye)
