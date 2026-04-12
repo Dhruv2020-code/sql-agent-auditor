@@ -29,7 +29,7 @@ def root():
 
 @app.post("/reset", response_model=Observation)
 def reset():
-    return Observation(observation="Reset successful", reward=0.0, done=False)
+    return Observation(observation="Reset successful", reward=0, done=False)
 
 
 @app.post("/step", response_model=Observation)
@@ -38,14 +38,14 @@ def step(action: Action):
 
     # error case
     if isinstance(result, str):
-        return Observation(observation=result, reward=0.0, done=True)
+        return Observation(observation=result, reward=0, done=True)
 
     if result.empty:
-        return Observation(observation="No results found", reward=0.0, done=True)
+        return Observation(observation="No results found", reward=0, done=True)
 
     result_str = result.to_string(index=False)
 
-    reward = 0.0
+    reward = 0
     query_lower = action.query.lower()
 
     try:
@@ -53,13 +53,13 @@ def step(action: Action):
         if "count" in query_lower:
             correct = run_query("SELECT COUNT(*) FROM orders")
             if (result.values == correct.values).all():
-                reward = 1.0
+                reward = 1
 
         # MEDIUM: total revenue
         elif "sum" in query_lower:
             correct = run_query("SELECT SUM(total_amount) FROM orders")
             if (result.values == correct.values).all():
-                reward = 1.0
+                reward = 1
 
         # HARD: top user by spending (FIXED)
         elif "group by" in query_lower:
@@ -73,10 +73,10 @@ def step(action: Action):
 
             if result.shape == correct.shape:
                 if (result.values.astype(float) == correct.values.astype(float)).all():
-                    reward = 1.0
+                    reward = 1
 
     except Exception:
-        reward = 0.0
+        reward = 0
 
     return Observation(
         observation=result_str,
