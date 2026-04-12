@@ -6,38 +6,10 @@ from sql import run_query
 
 app = FastAPI()
 
-DB_PATH = os.path.join(os.getcwd(), "data.db")
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+DB_PATH = os.path.join(BASE_DIR, "data.db")
 
-
-def init_db():
-    print("Files:", os.listdir())
-
-    if not os.path.exists(DB_PATH):
-        print("data.db not found, creating fallback DB")
-
-        import sqlite3
-        conn = sqlite3.connect(DB_PATH)
-        cursor = conn.cursor()
-
-        cursor.execute("""
-        CREATE TABLE orders (
-            id INTEGER PRIMARY KEY,
-            total_amount REAL
-        )
-        """)
-
-        cursor.executemany(
-            "INSERT INTO orders (total_amount) VALUES (?)",
-            [(100,), (200,), (300,)]
-        )
-
-        conn.commit()
-        conn.close()
-    else:
-        print("Using existing data.db")
-
-
-init_db()
+print("Using DB at:", DB_PATH)
 
 
 class Action(BaseModel):
@@ -57,24 +29,61 @@ def root():
 
 @app.post("/reset", response_model=Observation)
 def reset():
-    return Observation(observation="Reset successful", reward=0.95, done=False)
+    return Observation(observation="Reset successful", reward=0.0, done=False)
 
 
 @app.post("/step", response_model=Observation)
 def step(action: Action):
     result = run_query(action.query)
 
+    # error case
     if isinstance(result, str):
-        return Observation(observation=result, reward=0.95, done=True)
+        return Observation(observation=result, reward=0.0, done=True)
 
     if result.empty:
-        result_str = "No results found"
-    else:
-        result_str = result.to_string(index=False)
+        return Observation(observation="No results found", reward=0.0, done=True)
 
-    return Observation(observation=result_str, reward=0.95, done=True)
+    result_str = result.to_string(index=False)
+
+    reward = 0.0
+    query_lower = action.query.lower()
+
+    try:
+        # EASY: count orders
+        if "count" in query_lower:
+            correct = run_query("SELECT COUNT(*) FROM orders")
+            if (result.values == correct.values).all():
+                reward = 1.0
+
+        # MEDIUM: total revenue
+        elif "sum" in query_lower:
+            correct = run_query("SELECT SUM(total_amount) FROM orders")
+            if (result.values == correct.values).all():
+                reward = 1.0
+
+        # HARD: top user by spending (FIXED)
+        elif "group by" in query_lower:
+            correct = run_query("""
+                SELECT user_id, SUM(total_amount) as total
+                FROM orders
+                GROUP BY user_id
+                ORDER BY total DESC
+                LIMIT 1
+            """)
+
+            if result.shape == correct.shape:
+                if (result.values.astype(float) == correct.values.astype(float)).all():
+                    reward = 1.0
+
+    except Exception:
+        reward = 0.0
+
+    return Observation(
+        observation=result_str,
+        reward=reward,
+        done=True
+    )
 
 
 if __name__ == "__main__":
     uvicorn.run(app, host="0.0.0.0", port=7860)
-
