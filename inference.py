@@ -72,8 +72,7 @@ def main():
     tasks = [
         ("task_1", "Count total orders", "COUNT(*)"),
         ("task_2", "Total revenue", "SUM(total_amount)"),
-        ("task_3", "Top customer by spending",
-         "customer_id, SUM(total_amount) as total FROM orders GROUP BY customer_id ORDER BY total DESC LIMIT 1")
+        ("task_3", "Top user by total spending", "user_id, SUM(total_amount) as total FROM orders GROUP BY user_id ORDER BY total DESC LIMIT 1")
     ]
 
     for t in tasks:
@@ -85,7 +84,7 @@ def main():
     sys.stdout.flush()
 
    
-    time.sleep(5) 
+    time.sleep(5)
 
     print("Shutting down to finalize evaluation.")
     os._exit(0)
@@ -93,3 +92,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+
