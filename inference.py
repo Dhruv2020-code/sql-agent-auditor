@@ -16,7 +16,7 @@ client = OpenAI(base_url=API_BASE_URL, api_key=API_KEY)
 def wait_for_server():
     url = "http://127.0.0.1:7860/reset"
 
-    for i in range(30):
+    for _ in range(15):
         try:
             r = requests.post(url, timeout=2)
             if r.status_code == 200:
@@ -24,7 +24,7 @@ def wait_for_server():
                 return True
         except:
             pass
-        time.sleep(2)
+        time.sleep(1)
 
     return False
 
@@ -38,12 +38,12 @@ def run_task(task_id, question, fallback_sql):
         completion = client.chat.completions.create(
             model=MODEL_NAME,
             messages=[{"role": "user", "content": f"SQL for: {question}"}],
-            timeout=30
+            timeout=10
         )
         action_str = completion.choices[0].message.content.strip()
     except:
         action_str = fallback_sql
-    
+
     action_clean = action_str.strip().lower()
 
     if action_clean.startswith("select"):
@@ -72,24 +72,17 @@ def main():
     tasks = [
         ("task_1", "Count total orders", "COUNT(*)"),
         ("task_2", "Total revenue", "SUM(total_amount)"),
-        ("task_3", "Top user by total spending", "user_id, SUM(total_amount) as total FROM orders GROUP BY user_id ORDER BY total DESC LIMIT 1")
+        ("task_3", "Top user by total spending", "user_id, SUM(total_amount) as total FROM orders GROUP BY user_id ORDER BY total DESC LIMIT 1"),
     ]
 
     for t in tasks:
         run_task(*t)
-        time.sleep(2)
+        time.sleep(15)
 
-    # Tasks loop ke baad
-    print("Tasks completed successfully. Finalizing logs...")
-    sys.stdout.flush()
+    print("All tasks done. Exiting.")
 
-   
-    time.sleep(5)
-
-    print("Shutting down to finalize evaluation.")
-    os._exit(0)
+    sys.exit(0)
 
 
 if __name__ == "__main__":
     main()
-
