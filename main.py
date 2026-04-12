@@ -18,8 +18,15 @@ class Action(BaseModel):
 
 class Observation(BaseModel):
     observation: str
-    reward: float
+    reward: int   # ✅ STRICT INTEGER
     done: bool
+
+
+def safe_equal(df1, df2):
+    try:
+        return (df1.round(4).values == df2.round(4).values).all()
+    except:
+        return False
 
 
 @app.get("/")
@@ -36,7 +43,6 @@ def reset():
 def step(action: Action):
     result = run_query(action.query)
 
-    # error case
     if isinstance(result, str):
         return Observation(observation=result, reward=0, done=True)
 
@@ -45,23 +51,23 @@ def step(action: Action):
 
     result_str = result.to_string(index=False)
 
-    reward = 0
     query_lower = action.query.lower()
+    reward = 0  # default integer
 
     try:
-        # EASY: count orders
+        # EASY
         if "count" in query_lower:
             correct = run_query("SELECT COUNT(*) FROM orders")
-            if (result.values == correct.values).all():
+            if safe_equal(result, correct):
                 reward = 1
 
-        # MEDIUM: total revenue
-        elif "sum" in query_lower:
+        # MEDIUM
+        elif "sum" in query_lower and "group by" not in query_lower:
             correct = run_query("SELECT SUM(total_amount) FROM orders")
-            if (result.values == correct.values).all():
+            if safe_equal(result, correct):
                 reward = 1
 
-        # HARD: top user by spending (FIXED)
+        # HARD
         elif "group by" in query_lower:
             correct = run_query("""
                 SELECT user_id, SUM(total_amount) as total
@@ -70,17 +76,15 @@ def step(action: Action):
                 ORDER BY total DESC
                 LIMIT 1
             """)
-
-            if result.shape == correct.shape:
-                if (result.values.astype(float) == correct.values.astype(float)).all():
-                    reward = 1
+            if safe_equal(result, correct):
+                reward = 1
 
     except Exception:
         reward = 0
 
     return Observation(
         observation=result_str,
-        reward=reward,
+        reward=int(reward),  # 🔒 force integer
         done=True
     )
 
